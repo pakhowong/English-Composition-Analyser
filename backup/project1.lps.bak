@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <PathDelim Value="\"/>
+    <Version Value="9"/>
+    <BuildModes Active="Default"/>
+    <Units Count="8">
+      <Unit0>
+        <Filename Value="project1.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="115"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="..\..\..\Desktop\ProjectSBA\projectsba.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="Form1"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="ProjectSBA"/>
+        <EditorIndex Value="-1"/>
+        <WindowIndex Value="-1"/>
+        <TopLine Value="59"/>
+        <CursorPos X="50" Y="75"/>
+        <UsageCount Value="115"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="unit1.lfm"/>
+        <UsageCount Value="2"/>
+        <DefaultSyntaxHighlighter Value="LFM"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="C:\lazarus\lcl\stdctrls.pp"/>
+        <UnitName Value="StdCtrls"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="1118"/>
+        <CursorPos X="39" Y="959"/>
+        <UsageCount Value="23"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="..\..\..\Downloads\tester\project1.lpr"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="17" Y="19"/>
+        <UsageCount Value="7"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="..\..\..\Desktop\ProjectSBA\projectsba.lfm"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="10"/>
+        <UsageCount Value="7"/>
+        <DefaultSyntaxHighlighter Value="LFM"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="projectsba.pas"/>
+        <ComponentName Value="Form1"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="ProjectSBA"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="370"/>
+        <CursorPos X="53" Y="391"/>
+        <UsageCount Value="27"/>
+        <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="projectsba.lfm"/>
+        <EditorIndex Value="1"/>
+        <UsageCount Value="27"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="LFM"/>
+      </Unit7>
+    </Units>
+    <JumpHistory Count="10" HistoryIndex="9">
+      <Position1>
+        <Filename Value="projectsba.pas"/>
+        <Caret Line="136" Column="32" TopLine="196"/>
+      </Position1>
+      <Position2>
+        <Filename Value="projectsba.pas"/>
+        <Caret Line="130" Column="6" TopLine="107"/>
+      </Position2>
+      <Position3>
+        <Filename Value="projectsba.pas"/>
+        <Caret Line="131" Column="48" TopLine="108"/>
+      </Position3>
+      <Position4>
+        <Filename Value="projectsba.pas"/>
+        <Caret Line="128" Column="11" TopLine="105"/>
+      </Position4>
+      <Position5>
+        <Filename Value="projectsba.pas"/>
+        <Caret Line="196" Column="9" TopLine="173"/>
+      </Position5>
+      <Position6>
+        <Filename Value="projectsba.pas"/>
+        <Caret Line="129" Column="19" TopLine="105"/>
+      </Position6>
+      <Position7>
+        <Filename Value="projectsba.pas"/>
+        <Caret Line="130" Column="6" TopLine="107"/>
+      </Position7>
+      <Position8>
+        <Filename Value="projectsba.pas"/>
+        <Caret Line="74" Column="24" TopLine="39"/>
+      </Position8>
+      <Position9>
+        <Filename Value="projectsba.pas"/>
+        <Caret Line="78" Column="24" TopLine="49"/>
+      </Position9>
+      <Position10>
+        <Filename Value="projectsba.pas"/>
+        <Caret Line="393" Column="24" TopLine="370"/>
+      </Position10>
+    </JumpHistory>
+  </ProjectSession>
+</CONFIG>

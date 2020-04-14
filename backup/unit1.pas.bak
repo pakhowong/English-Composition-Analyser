@@ -1,0 +1,504 @@
+unit unit1;
+
+{$mode objfpc}{$H+}
+
+interface
+
+uses
+  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
+  ComCtrls, ExtCtrls, PopupNotifier, Buttons;
+
+type
+    Level =  1..7;   //For English composition's marking scheme, the grades are from 1 to 7, rather then 1 to 5**.
+    GradeType = record
+               max : Level;
+               min : Level
+            end;
+
+  { TForm1 }
+
+  TForm1 = class(TForm)
+    Button1: TButton;
+    Button10: TButton;
+    Button2: TButton;
+    Button3: TButton;
+    Button4: TButton;
+    Button5: TButton;
+    Button7: TButton;
+    Button6: TButton;
+    Button8: TButton;
+    Button9: TButton;
+    CheckBox1: TCheckBox;
+    Image1: TImage;
+    Label1: TLabel;
+    Label2: TLabel;
+    Label3: TLabel;
+    Label4: TLabel;
+    Label5: TLabel;
+    Label6: TLabel;
+    Label7: TLabel;
+    Label9: TLabel;
+    Memo1: TMemo;
+    Memo2: TMemo;
+    Memo3: TMemo;
+    Memo4: TMemo;
+    Memo5: TMemo;
+    OpenDialog1: TOpenDialog;
+    OpenDialog2: TOpenDialog;
+    Others: TTabSheet;
+    Panel1: TPanel;
+    Panel2: TPanel;
+    Panel3: TPanel;
+    Panel4: TPanel;
+    Panel5: TPanel;
+    Panel6: TPanel;
+    Panel7: TPanel;
+    Panel8: TPanel;
+    PopupNotifier1: TPopupNotifier;
+    ProgressBar1: TProgressBar;
+    Statistics: TTabSheet;
+    SpellingMistakes: TTabSheet;
+    PageControl1: TPageControl;
+    SaveDialog1: TSaveDialog;
+    General: TTabSheet;
+    procedure Button10Click(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
+    procedure Button3Click(Sender: TObject);
+    procedure Button4Click(Sender: TObject);
+    procedure Button5Click(Sender: TObject);
+    procedure Button6Click(Sender: TObject);
+    procedure Button7Click(Sender: TObject);
+    procedure Button8Click(Sender: TObject);
+    procedure Button9Click(Sender: TObject);
+  private
+    { private declarations }
+  public
+    { public declarations }
+  end;
+
+var
+  Form1: TForm1;
+  NumOfWords, NumOfPara, NumOfWW, NumOfWCap : integer;
+  filename, Comment: string;
+  Grade : GradeType;
+  ReportString : TStringList;
+  hasComment, isFinished_WW, isFinished_Cap, isFinished_Comment, isFinished_Grade : Boolean;
+
+implementation
+
+{$R *.lfm}
+
+{ TForm1 }
+
+function isCapitalised(sentence : string) : Boolean;
+var
+   counter : integer;
+begin
+     isCapitalised := TRUE;
+     for counter := 1 to length(sentence) do
+         if NOT CharInSet(sentence[counter], ['A'..'Z']) then   //Check whether the string is in capital letters.
+            isCapitalised := FALSE
+end;
+
+function isNoPunctuation(word : string) : Boolean;
+var
+   counter : integer;
+begin
+     isNoPunctuation := FALSE;
+     for counter := 1 to length(word) do
+         if ((NOT (word[counter] = ',')) and (NOT (word[counter] = '.')) and (NOT (word[counter] = '?')) and (NOT (word[counter] = '!')) and (NOT (word[counter] = '(')) and (NOT (word[counter] = ')'))) then   //Check whether there is any character or not.
+              isNoPunctuation := TRUE
+end;
+
+function isNewWord(word : string) : Boolean;
+var
+   counter : integer;
+begin
+     isNewWord := FALSE;
+     for counter := 1 to length(word) do
+         if NOT CharInSet(word[counter], ['a'..'z'])then   //Check whether there is any character or not.
+         begin
+           if NOT CharInSet(word[counter], ['A'..'Z'])then   //Check whether there is any character or not.
+              isNewWord := TRUE
+         end
+end;
+
+procedure TForm1.Button1Click(Sender: TObject);   //Open File, Word Counting and Paragraph Counting
+var
+   article : TextFile;
+   words, post : integer;
+   composition, word, check_para : string;
+begin
+     words := 0;
+     NumOfPara := 0;
+     if OpenDialog1.Execute then
+     begin
+       filename := OpenDialog1.FileName;
+     end;
+     if (filename <> '') then
+     begin
+       Memo1.Lines.LoadFromFile(filename);   //Display the .txt document.
+       assignFile(article, filename);
+       reset(article);
+       hasComment := FALSE;
+       repeat
+             readln(article, composition);   //Load the document line by line.
+             word := composition;   //Create a temporary copy of the document.
+             check_para := copy(composition, 1, 2);   //Check if the line marks the beginning of a new paragraph.
+             if (check_para = '  ') then
+                NumOfPara := NumOfPara + 1;   //Count the number of paragraph.
+             repeat
+                   post := pos(' ', word);   //Find the position of 'space' in the sentence.
+                   word := copy(word, (post + 1), (length(composition) - post));   //Based on the position of 'space', copy the word before the 'space'.
+                   words := words + 1;   //Count the number of words.
+             until (post = 0);   //No more 'space' marks the end of the sentence.
+       until eof(article);
+       closeFile(article);
+       NumOfWords := words - NumOfPara * 2;
+       Label1.Caption := 'Number of words: ' + IntToStr(NumOfWords);
+       Label3.Caption := 'Number of paragraphs: ' + IntToStr(NumOfPara);
+     end
+     else
+     begin
+        PopupNotifier1.Text := 'Please choose a (.txt) file!';
+        PopupNotifier1.ShowAtPos(800,450);   //Show a message at the middle of the screen.
+     end
+end;
+
+procedure TForm1.Button2Click(Sender: TObject);   //Frequency Checking
+type
+   NewWordType = record
+                    start : string;
+                    fin : string
+                 end;
+var
+   article : TextFile;
+   words, post : integer;
+   frequency, composition, word, word2, word3, Lword : string;
+   StandAlone : NewWordType;
+begin
+     if (filename <> '') then
+     begin
+        assignFile(article, filename);
+        reset(article);
+        word := memo2.Text;   //Get the words in the memo2, and store that in 'word'.
+        Lword := LowerCase(word);   //Create a non-capitalised copy of the inputted word.
+        words := 0;   //Initialise the number of words.
+        repeat
+              readln(article, composition);
+              word3 := LowerCase(composition);   //Create a temporary non-capitalised copy of the document.
+              repeat
+                 post := pos(Lword, word3);
+                 if (post <> 0) then
+                 begin
+                      word2 := copy(word3, post, length(Lword));
+                      StandAlone.start := copy(word3, post - 1, 1);   //Check whether the word is a stand-alone word or not.
+                      StandAlone.fin := copy(word3, (post + length(Lword)), 1);   //Check whether the word is a stand-alone word or not.
+                      word3 := copy(word3, (post + length(Lword)), (length(composition) - post - length(Lword)));
+                      if (Lword = word2) and isNewWord(StandAlone.start) and isNewWord(StandAlone.fin) then   //Check whether the word is a stand-alone word or not.
+                         words := words + 1;   //Count the number of words.
+                 end;
+              until (post = 0);   //No more 'space' marks the end of the sentence.
+        until eof(article);
+        closeFile(article);
+        if (words <> 0) then
+        begin
+           frequency := IntToStr(words);
+           Label2.Caption := 'Frequency: ' + frequency;
+        end
+        else
+            Label2.Caption := ''' ' + word + ' ''' + ' not found.'
+     end
+     else
+     begin
+        PopupNotifier1.Text := 'Please choose a (.txt) file!';
+        PopupNotifier1.ShowAtPos(800,450);   //Show a message at the middle of the screen.
+     end
+end;
+
+procedure TForm1.Button3Click(Sender: TObject);   //Wrong Word Checker
+var
+   article, article2 : TextFile;
+   post, correct, para : integer;
+   filename2, composition, word, word2, word3, check_para : string;
+   PuncCheck : string;
+   WrongList : TStringList;
+begin
+     if (filename <> '') then
+     begin
+        assignFile(article, filename);
+        reset(article);
+        WrongList := TStringList.Create;
+        para := 0;
+        correct := 0;   //Initialise the variable.
+        NumOfWW := NumOfWords;   //Initialise the number of wrong words as the number of words.
+        if OpenDialog2.Execute then
+        begin
+          filename2 := OpenDialog2.FileName;
+        end;
+        if (filename2 <> '') then
+        begin
+           assignFile(article2, filename2);
+           reset(article2);   //article2 is the dictionary, contains correct words.
+           repeat
+              readln(article, composition);
+              word3 := LowerCase(composition);   //Create a temporary non-capitalised copy of the document.
+              check_para := copy(composition, 1, 2);
+              if (check_para = '  ') then   //Check whether the line is the General of a new paragraph.
+              begin
+                 para := para + 1;
+                 word3 := copy(word3, 3, (length(composition) - 2));   //Delete the first 2 'space' of the new paragraph.
+              end;
+              repeat
+                 post := pos(' ', word3);   //Find the position of 'space' in the sentence.
+                 if (post <> 0) then
+                 begin
+                     word2 := copy(word3, 1, (post - 1));   //Based on the position of 'space', copy the word before the 'space'.
+                     PuncCheck := copy(word2, (length(Word2)), 1);
+                     if NOT (isNoPunctuation(PuncCheck)) then
+                        word2 := copy(word2, 1, (length(word2) - 1))   //Delete the punctuation after the word.
+                 end
+                 else
+                 begin
+                    word2 := word3;
+                    PuncCheck := copy(word2, (length(Word2)), 1);
+                    if NOT (isNoPunctuation(PuncCheck)) then
+                        word2 := copy(word2, 1, (length(word2) - 1))   //Delete the punctuation after the word.
+                 end;
+                 assignFile(article2, filename2);   //Re-open the dictionary as article2 was closed after the loop.
+                 reset(article2);
+                 repeat
+                       readln(article2, word);   //Read the words in the dictionary (1 word per line) line by line.
+                       word := LowerCase(word);   //Non-capitalised the dictionary.
+                       if (word2 = word) then
+                       begin
+                          correct := correct + 1;   //Find the number of correct words.
+                       end;
+                 until (eof(article2) or (word2 = word));
+                 if NOT (word2 = word) then
+                 begin
+                    WrongList.ADD(word2 + ' in Paragraph ' + IntToStr(para));
+                    WrongList.ADD('');
+                 end;
+                 closeFile(article2);   //Reset the pointer, so the program can read the dictionary from the beginning again next time.
+                 word3 := copy(word3, (post + 1), (length(composition) - post));
+              until (post = 0);   //No more 'space' marks the end of the sentence.
+           until eof(article);
+         NumOfWW := NumOfWW - correct;   //Find the number of correct words.
+         Label4.Caption := 'Number of Wrong Words: ' + IntToStr(NumOfWW);
+         closeFile(article);
+         if (NumOfWW > 0) then
+         begin
+              Memo4.Lines.Assign(WrongList);
+              WrongList.Free;
+         end
+         else
+         begin
+             Memo4.Lines.Clear;
+             Memo4.Lines.Add('There is not even a single spelling mistake in the composition!')
+         end;
+         if NOT (isFinished_WW) then
+         begin
+           ProgressBar1.Position := ProgressBar1.Position + 25;
+           Label7.Caption := 'Progress: ' + IntToStr(ProgressBar1.Position) + '%';
+           isFinished_WW := TRUE   //Ensure the progress bar was increased only once.
+         end
+        end
+        else
+        begin
+             PopupNotifier1.Text := 'Please choose a (.txt) file!';
+             PopupNotifier1.ShowAtPos(800,450);   //Show a message at the middle of the screen.
+        end
+     end
+     else
+     begin
+        PopupNotifier1.Text := 'Please choose a (.txt) file!';
+        PopupNotifier1.ShowAtPos(800,450);   //Show a message at the middle of the screen.
+     end
+end;
+
+procedure TForm1.Button4Click(Sender: TObject);   //Capital Letter Checker
+var
+   article : TextFile;
+   post, counter : integer;
+   composition, word3, word : string;
+   punctuation : array [1..3] of char;
+begin
+     if (filename <> '') then
+     begin
+       punctuation[1] := '.';
+       punctuation[2] := '?';
+       punctuation[3] := '!';
+       NumOfWCap := 0;
+       for counter := 1 to 3 do
+       begin
+         assignFile(article, filename);
+         reset(article);
+         repeat
+           readln(article, composition);
+           word3 := composition;   //Create a temporary copy of the document.
+               repeat
+                 post := pos(punctuation[counter], word3);   //Find the punctuations in the sentence.
+                 if (post <> 0) then
+                 begin
+                      word := copy(word3, (post + 2), 1);
+                      word3 := copy(word3, (post + 2), (length(composition) - post - 1));
+                      if (isCapitalised(word) = FALSE) then   //Call the function which is use to check whether a word is capitalised.
+                      begin
+                           NumOfWCap := NumOfWCap + 1;   //Count the number of non-capitalised words.
+                      end
+                 end;
+               until (post = 0);
+         until eof(article);
+         closeFile(article)
+       end;
+       Label5.Caption := 'Wrong: ' + IntToStr(NumOfWCap);
+       if NOT (isFinished_Cap) then
+       begin
+          ProgressBar1.Position := ProgressBar1.Position + 25;
+          Label7.Caption := 'Progress: ' + IntToStr(ProgressBar1.Position) + '%';
+          isFinished_Cap := TRUE   //Ensure the progress bar was increased only once.
+       end;
+     end
+     else
+     begin
+        PopupNotifier1.Text := 'Please choose a (.txt) file!';
+        PopupNotifier1.ShowAtPos(800,450);   //Show a message at the middle of the screen.
+     end
+end;
+
+procedure TForm1.Button5Click(Sender: TObject);   //Grade Suggestion
+begin
+     if (filename <> '') then
+     begin
+       Grade.max := 7;
+       Grade.min := 1;
+       if (NumOfWW > 5) and (NumOfWords > 250) and (NumOfPara > 3) then
+        Grade.max := 5
+       else if (NumOfWords > 250) and (NumOfPara > 3) then
+        Grade.min := 3;
+       if (NumOfWCap > 5) and (NumOfWords > 250) and (NumOfPara > 3) then
+        Grade.max := 5
+       else if (NumOfWords > 250) and (NumOfPara > 3) then
+        Grade.min := 3;
+       if (NumOfWords < 250) then
+        Grade.max := 4;
+       if (NumOfPara < 3) then
+        Grade.max := 4;
+       Label9.Caption := 'Range of Grades: ' + IntToStr(Grade.min) + ' to ' + IntToStr(Grade.max);
+       if NOT (isFinished_Grade) then
+       begin
+          ProgressBar1.Position := ProgressBar1.Position + 25;
+          Label7.Caption := 'Progress: ' + IntToStr(ProgressBar1.Position) + '%';
+          isFinished_Grade := TRUE   //Ensure the progress bar was increased only once.
+       end
+     end
+     else
+     begin
+        PopupNotifier1.Text := 'Please choose a (.txt) file!';
+        PopupNotifier1.ShowAtPos(800,450);   //Show a message at the middle of the screen.
+     end
+end;
+
+procedure TForm1.Button10Click(Sender: TObject);   //Report preview.
+begin
+   if (filename <> '') then
+   begin
+       ReportString := TStringList.Create;
+       ReportString.Add('Composition Analytical Report');
+       ReportString.Add('');
+       ReportString.Add('Suggested Range of Grades: ' + IntToStr(Grade.min) + ' to ' + IntToStr(Grade.max));
+       ReportString.Add('Number of Words: ' + IntToStr(NumOfWords));
+       ReportString.Add('Number of Paragraphs: ' + IntToStr(NumOfPara));
+       ReportString.Add('Number of Spelling Mistakes: ' + IntToStr(NumOfWW));
+       ReportString.Add('Number of Incorrect Capitalisations: ' + IntToStr(NumofWCap));
+       ReportString.Add('');
+       if (hasComment) then
+       begin
+          ReportString.Add('Comment: ');
+          ReportString.Add('  ' + Comment);
+          ReportString.Add('')
+       end;
+       ReportString.Add('Analysed using ''English Composition Analyser''');
+       ReportString.Add('Developed by Parco Wong, using Pascal Language.');
+       if (CheckBox1.Checked) then
+       begin
+         ReportString.Add('');
+         ReportString.Add('Report generated on ' + DateTimeToStr(now))
+       end;
+       Memo5.Lines.Assign(ReportString);
+       ReportString.free;
+       PopupNotifier1.Text := 'Report Generated!';
+       PopupNotifier1.ShowAtPos(800,450);   //Show a message at the middle of the screen.
+   end
+   else
+   begin
+        PopupNotifier1.Text := 'Please choose a (.txt) file!';
+        PopupNotifier1.ShowAtPos(800,450);   //Show a message at the middle of the screen.
+   end
+end;
+
+procedure TForm1.Button7Click(Sender: TObject);   //Add comment.
+begin
+   if (filename <> '') then
+   begin
+     Comment := Memo3.Text;
+     hasComment := TRUE;
+     PopupNotifier1.Text := 'Comment Added!';
+     PopupNotifier1.ShowAtPos(800,450);   //Show a message at the middle of the screen.
+     if NOT (isFinished_Comment) then
+     begin
+          ProgressBar1.Position := ProgressBar1.Position + 25;
+          Label7.Caption := 'Progress: ' + IntToStr(ProgressBar1.Position) + '%';
+          isFinished_Comment := TRUE   //Ensure the progress bar was increased only once.
+     end
+   end
+   else
+   begin
+        PopupNotifier1.Text := 'Please choose a (.txt) file!';
+        PopupNotifier1.ShowAtPos(800,450);   //Show a message at the middle of the screen.
+   end
+end;
+
+procedure TForm1.Button8Click(Sender: TObject);
+begin
+  PopupNotifier1.Text := 'The current time is: ' + LineEnding + TimeToStr(time);
+  PopupNotifier1.ShowAtPos(800,450);   //Show a message at the middle of the screen.
+end;
+
+procedure TForm1.Button6Click(Sender: TObject);   //Print report.
+var
+   filename2 : string;
+begin
+  if (filename <> '') then
+   begin
+     if SaveDialog1.Execute then
+     begin
+        filename2 := SaveDialog1.FileName;
+     end;
+     if (filename2 <> '') then
+     begin
+       Memo5.Lines.SaveToFile(filename2);
+       PopupNotifier1.Text := 'Report saved!';
+       PopupNotifier1.ShowAtPos(800,450);   //Show a message at the middle of the screen.
+     end
+     else
+     begin
+       PopupNotifier1.Text := 'Please choose a (.txt) file!';
+       PopupNotifier1.ShowAtPos(800,450);   //Show a message at the middle of the screen.
+     end
+   end
+   else
+   begin
+       PopupNotifier1.Text := 'Please choose a (.txt) file!';
+       PopupNotifier1.ShowAtPos(800,450);   //Show a message at the middle of the screen.
+   end
+end;
+
+procedure TForm1.Button9Click(Sender: TObject);
+begin
+    halt;   //Exit the program.
+end;
+
+end.
