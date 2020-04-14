@@ -1,4 +1,4 @@
-# English-Composition-Analyser
+# English Composition Analyser
 An English composition analyser developed in Pascal language, using Lazarus.
 
 As the name ‘English Composition Analyser’ suggests, it was, of course, developed for analysing English compositions. Users only need to press a few buttons for a detailed statistical report of the loaded English composition. This significantly reduces the time taken to grade English compositions as users no longer need to perform those time-consuming yet indicative routines including but not limited to counting the number of words and finding the spelling mistakes. Such kind of low-level operations will now be taken over by this software.
